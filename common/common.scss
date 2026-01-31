@@ -1,1 +1,72 @@
-// Theme's SCSS
+/* Discourse Inline Tooltips Theme Component https://github.com/denvergeeks/discourse-inline-tooltips/common/common.scss */
+
+.inline-tip {
+  display: inline;
+  
+  a.expand-tip {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    color: var(--tertiary);
+    cursor: help;
+    
+    &:hover {
+      color: var(--tertiary-high);
+      text-decoration-style: solid;
+    }
+  }
+}
+
+.fk-d-tooltip__content[data-identifier="inline-tip"] {
+  overflow-wrap: break-word;
+  font-size: var(--font-down-1);
+  
+  .fk-d-tooltip__inner-content {
+    flex-direction: column;
+  }
+
+  img {
+    height: auto;
+    max-width: 100%;
+  }
+
+  p {
+    margin: 0;
+    min-width: 0;
+    max-width: 100%;
+          
+    &:first-child {
+      margin-top: 0;
+    }
+      
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+    
+  strong, b {
+    font-weight: bold;
+  }
+    
+  em, i {
+    font-style: italic;
+  }
+    
+  code {
+    background: var(--primary-very-low);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+}
+
+body.dark-mode {
+  .inline-tip {
+    a.expand-tip {
+      color: var(--tertiary);
+      
+      &:hover {
+        color: var(--tertiary-high);
+      }
+    }
+  }
+}
