@@ -8,8 +8,8 @@
   "minimum_discourse_version": "3.1.0",
   "maximum_discourse_version": null,
   "assets": {
-  "icons-sprite": "/assets/my-icons.svg"
-}
+  "icons-sprite": "/assets/tooltip-icon.svg"
+  }
   "color_schemes": {},
   "modifiers": {},
   "learn_more": "https://github.com/denvergeeks/discourse-inline-tooltips"
