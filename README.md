@@ -1,5 +1,3 @@
-# **Theme Name**
+# **Discourse Inline Tooltips**
 
-**Theme Summary**
-
-For more information, please see: **url to meta topic**
+**Provides a button in the Discourse Composer toolbar to add Inline Tooltips within posts.**
