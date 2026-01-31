@@ -1,5 +1,6 @@
 en:
-  theme_metadata:
-    description: "TODO"
-    settings:
-      example_setting: "A description of a setting."
+  composer_toolbar:
+    insert_button: "Insert Tooltip"
+    default_template: |
+      Trigger text
+      Tooltip content goes here...
