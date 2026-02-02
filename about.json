@@ -1,10 +1,10 @@
 {
   "name": "Inline Tooltips",
-  "about_url": "https://github.com/denvergeeks/discourse-inline-tooltips",
-  "license_url": "https://github.com/denvergeeks/discourse-inline-tooltips/blob/main/LICENSE",
-  "authors": "@denvergeeks",
+  "about_url": "https://github.com/noobishme/discourse-inline-tooltips",
+  "license_url": "https://github.com/noobishme/discourse-inline-tooltips/blob/main/LICENSE",
+  "authors": "@nOObishme",
   "component": true,
-  "theme_version": "1.0.0",
+  "theme_version": "2.0.0",
   "minimum_discourse_version": "3.1.0",
   "maximum_discourse_version": null,
   "assets": {
@@ -12,5 +12,5 @@
   },
   "color_schemes": {},
   "modifiers": {},
-  "learn_more": "https://github.com/denvergeeks/discourse-inline-tooltips"
+  "learn_more": "https://github.com/noobishme/discourse-inline-tooltips"
 }
