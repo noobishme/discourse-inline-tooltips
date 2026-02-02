@@ -53,15 +53,12 @@
     font-style: italic;
   }
 
-  pre code {
-    white-space: normal;
-  }
-    
   code {
     background: var(--primary-very-low);
     padding: 0.2em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
+    white-space: normal;    
   }
 }
 
