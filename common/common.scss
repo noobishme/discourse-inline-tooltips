@@ -70,3 +70,70 @@ body.dark-mode {
     }
   }
 }
+
+
+
+
+
+
+
+.inline-tip-content {
+  // Ensure proper inline flow
+  display: inline-block;
+  max-width: 300px;
+  
+  // Inline elements should stay inline
+  strong, em, code, a, span {
+    display: inline;
+  }
+  
+  // Block elements get proper spacing
+  p, div {
+    display: block;
+    margin: 0.25em 0;
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    display: block;
+    margin: 0.5em 0 0.25em 0;
+  }
+  
+  ul, ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+  }
+  
+  img {
+    max-width: 100%;
+    display: block;
+    margin: 0.5em 0;
+  }
+  
+  table {
+    margin: 0.5em 0;
+  }
+}
+
+// Trigger link styling
+.inline-tip {
+  display: inline;
+  
+  .expand-tip {
+    color: var(--tertiary);
+    text-decoration: underline dotted;
+    cursor: pointer;
+    
+    &:hover {
+      color: var(--tertiary-hover);
+      text-decoration: underline solid;
+    }
+  }
+}
