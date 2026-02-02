@@ -52,6 +52,10 @@
   em, i {
     font-style: italic;
   }
+
+  pre code {
+    white-space: normal;
+  }
     
   code {
     background: var(--primary-very-low);
