@@ -37,7 +37,7 @@ class InlineTip extends Component {
 }
 
 export default apiInitializer("0.11.1", (api) => {
-  // Register translation for button label
+  // Register translation
   const locale = I18n.locale || I18n.currentLocale || "en";
   if (!I18n.translations[locale]) {
     I18n.translations[locale] = {};
@@ -60,7 +60,7 @@ export default apiInitializer("0.11.1", (api) => {
   if (composerApi.addComposerToolbarPopupMenuOption) {
     composerApi.addComposerToolbarPopupMenuOption({
       id: "insert-tip",
-      icon: "tooltip-icon",
+      icon: "info-circle",
       label: "insert_tooltip_label",
       action(toolbarEvent) {
         insertTip(toolbarEvent, api);
@@ -91,7 +91,6 @@ function insertTip(toolbarEvent, api) {
     return;
   }
 
-  // Get selected text - handle both string and object formats
   let selectedText = "";
   
   if (toolbarEvent.selected) {
@@ -105,9 +104,9 @@ function insertTip(toolbarEvent, api) {
   
   let triggerText = selectedText || "trigger text";
   
-  // Simple inline content only
-  const htmlTag = "strong";
-  const insertion = `<span data-tip="${triggerText}">Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}></span>`;
+  const insertion = `[tip trigger="${triggerText}"]
+Your tooltip content here with HTML, images, etc.
+[/tip]`;
 
   if (typeof toolbarEvent.addText === "function") {
     toolbarEvent.addText(insertion);
@@ -134,39 +133,65 @@ function processTips(element, helper) {
     return;
   }
 
-  const tipSpans = element.querySelectorAll('span[data-tip]');
+  // Look for our custom BBCode-style tags in the raw HTML
+  const html = element.innerHTML;
+  const tipRegex = /\[tip trigger=["']([^"']+)["']\]([\s\S]*?)\[\/tip\]/g;
   
-  if (tipSpans.length === 0) {
+  let match;
+  const tips = [];
+  
+  while ((match = tipRegex.exec(html)) !== null) {
+    tips.push({
+      fullMatch: match[0],
+      trigger: match[1],
+      content: match[2].trim()
+    });
+  }
+  
+  if (tips.length === 0) {
     return;
   }
-
-  tipSpans.forEach((span) => {
-    if (span.classList.contains('inline-tip')) {
-      return;
-    }
-    
-    const triggerText = span.getAttribute('data-tip');
-    
-    if (!triggerText) {
-      return;
-    }
-
-    const tipContent = span.innerHTML.trim();
-    
-    if (!tipContent) {
-      return;
-    }
-
+  
+  // Replace each tip with the component
+  let newHTML = html;
+  
+  tips.forEach((tip) => {
     const tipComponent = document.createElement('span');
     tipComponent.className = 'inline-tip';
+    tipComponent.setAttribute('data-trigger', tip.trigger);
+    tipComponent.setAttribute('data-content', tip.content);
+    
+    // Create a placeholder
+    const placeholder = `<!--TIP_PLACEHOLDER_${Math.random().toString(36).substr(2, 9)}-->`;
+    newHTML = newHTML.replace(tip.fullMatch, placeholder);
+    
+    // Store for later replacement
+    tipComponent.setAttribute('data-placeholder', placeholder);
     
     helper.renderGlimmer(tipComponent, InlineTip, {
-      triggerText: triggerText,
-      tipContent: tipContent
+      triggerText: tip.trigger,
+      tipContent: tip.content
     });
-
-    span.parentNode.replaceChild(tipComponent, span);
+    
+    // Replace placeholder with component
+    setTimeout(() => {
+      const placeholderNode = element.ownerDocument.createTreeWalker(
+        element,
+        NodeFilter.SHOW_COMMENT,
+        null,
+        false
+      );
+      
+      let commentNode;
+      while (commentNode = placeholderNode.nextNode()) {
+        if (commentNode.nodeValue === placeholder.replace('<!--', '').replace('-->', '')) {
+          commentNode.parentNode.replaceChild(tipComponent, commentNode);
+          break;
+        }
+      }
+    }, 0);
   });
   
+  element.innerHTML = newHTML;
   element.classList.add("inline-tips-processed");
 }
