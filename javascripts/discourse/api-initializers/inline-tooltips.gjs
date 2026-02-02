@@ -89,19 +89,12 @@ function insertTip(toolbarEvent, api) {
     return;
   }
 
-  const reply = model.reply || "";
-  const selection = model.replySelection || {};
-  const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
-  const selectionEnd = selection.end ?? model.replySelectionEnd ?? reply.length;
+  // Get text from the toolbarEvent which contains the cursor position
+  const selected = toolbarEvent.selected || "";
+  const pre = toolbarEvent.pre || "";
+  const post = toolbarEvent.post || "";
   
-  let selectedText = "";
-  let triggerText = "trigger text";
-  
-  // Check if text is selected
-  if (selectionStart !== undefined && selectionEnd !== undefined && selectionStart !== selectionEnd) {
-    selectedText = reply.substring(selectionStart, selectionEnd);
-    triggerText = selectedText;
-  }
+  let triggerText = selected || "trigger text";
   
   // Create the tooltip markup
   const insertion = `<span data-tip="${triggerText}">
@@ -110,12 +103,21 @@ Tooltip content with **markdown** and <strong>HTML</strong>
 
 </span>`;
 
-  // Use replaceText to insert at cursor or replace selection
-  if (typeof model.replaceText === "function") {
-    model.replaceText(selectionStart, selectionEnd, insertion);
-  } else if (typeof model.appendText === "function") {
-    // Fallback to appendText if replaceText not available
-    model.appendText(insertion);
+  // Use addText which properly handles cursor position from toolbarEvent
+  if (typeof toolbarEvent.addText === "function") {
+    toolbarEvent.addText(insertion);
+  } else {
+    // Fallback: use model methods
+    const reply = model.reply || "";
+    const selection = model.replySelection || {};
+    const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
+    const selectionEnd = selection.end ?? model.replySelectionEnd ?? reply.length;
+    
+    if (typeof model.replaceText === "function") {
+      model.replaceText(selectionStart, selectionEnd, insertion);
+    } else if (typeof model.appendText === "function") {
+      model.appendText(insertion);
+    }
   }
 }
 
