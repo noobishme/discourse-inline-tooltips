@@ -107,14 +107,9 @@ function insertTip(toolbarEvent, api) {
   let triggerText = selectedText || "trigger text";
   
   // Create the tooltip markup
-  // data-tip contains the trigger text (visible clickable text)
-  // Content between tags is the tooltip content (what appears in the popup)
+  // NO BLANK LINES inside the span - Markdown will break it otherwise
   const htmlTag = "strong";
-  const insertion = `<span data-tip="${triggerText}">
-
-Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}>
-
-</span>`;
+  const insertion = `<span data-tip="${triggerText}">Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}></span>`;
 
   // Use addText which properly handles cursor position from toolbarEvent
   if (typeof toolbarEvent.addText === "function") {
