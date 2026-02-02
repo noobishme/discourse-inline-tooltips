@@ -108,10 +108,13 @@ function insertTip(toolbarEvent, api) {
   // Use selected text as trigger, or default placeholder
   let triggerText = selectedText || "trigger text";
   
-  // Create the tooltip markup
-  // Use HTML comment markers to preserve content through Markdown processing
+  // Create the tooltip markup using div wrapper for rich content
   const htmlTag = "strong";
-  const insertion = `<!--tip:start:${triggerText}-->Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}><!--tip:end-->`;
+  const insertion = `<div class="inline-tip-raw" data-trigger="${triggerText}">
+
+Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}>
+
+</div>`;
 
   // Use addText which properly handles cursor position from toolbarEvent
   if (typeof toolbarEvent.addText === "function") {
@@ -140,66 +143,39 @@ function processTips(element, helper) {
     return;
   }
 
-  // Process HTML comment-based tips
-  processCommentTips(element, helper);
+  // Process div-based tips (for rich content)
+  processDivTips(element, helper);
   
-  // Also process legacy span-based tips (for inline content only)
+  // Also process span-based tips (for simple inline content)
   processSpanTips(element, helper);
   
   element.classList.add("inline-tips-processed");
 }
 
-function processCommentTips(element, helper) {
-  // Find all HTML comment pairs that mark tooltip boundaries
-  const walker = document.createTreeWalker(
-    element,
-    NodeFilter.SHOW_COMMENT,
-    null,
-    false
-  );
+function processDivTips(element, helper) {
+  // Find all divs with class inline-tip-raw
+  const tipDivs = element.querySelectorAll('div.inline-tip-raw');
   
-  const startComments = [];
-  let node;
-  
-  while (node = walker.nextNode()) {
-    if (node.nodeValue.startsWith('tip:start:')) {
-      startComments.push(node);
-    }
+  if (tipDivs.length === 0) {
+    return;
   }
-  
-  startComments.forEach((startComment) => {
-    // Extract trigger text from comment
-    const triggerText = startComment.nodeValue.replace('tip:start:', '');
+
+  tipDivs.forEach((div) => {
+    // Get trigger text from data-trigger attribute
+    const triggerText = div.getAttribute('data-trigger');
     
-    // Find the end comment
-    let currentNode = startComment.nextSibling;
-    const contentNodes = [];
-    let endComment = null;
-    
-    while (currentNode) {
-      if (currentNode.nodeType === Node.COMMENT_NODE && currentNode.nodeValue === 'tip:end') {
-        endComment = currentNode;
-        break;
-      }
-      contentNodes.push(currentNode);
-      currentNode = currentNode.nextSibling;
-    }
-    
-    if (!endComment || contentNodes.length === 0) {
+    if (!triggerText) {
       return;
     }
+
+    // Get tooltip content from innerHTML
+    const tipContent = div.innerHTML.trim();
     
-    // Gather the HTML content between comments
-    const tipContent = contentNodes.map(node => {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        return node.outerHTML;
-      } else if (node.nodeType === Node.TEXT_NODE) {
-        return node.textContent;
-      }
-      return '';
-    }).join('').trim();
-    
-    // Create tooltip component
+    if (!tipContent) {
+      return;
+    }
+
+    // Create tooltip component as inline element
     const tipComponent = document.createElement('span');
     tipComponent.className = 'inline-tip';
     
@@ -207,25 +183,14 @@ function processCommentTips(element, helper) {
       triggerText: triggerText,
       tipContent: tipContent
     });
-    
-    // Insert tooltip before start comment
-    startComment.parentNode.insertBefore(tipComponent, startComment);
-    
-    // Remove all the content nodes and comments
-    startComment.parentNode.removeChild(startComment);
-    contentNodes.forEach(node => {
-      if (node.parentNode) {
-        node.parentNode.removeChild(node);
-      }
-    });
-    if (endComment.parentNode) {
-      endComment.parentNode.removeChild(endComment);
-    }
+
+    // Replace the div with our inline tooltip
+    div.parentNode.replaceChild(tipComponent, div);
   });
 }
 
 function processSpanTips(element, helper) {
-  // Find all spans with data-tip attribute (legacy support for inline content)
+  // Find all spans with data-tip attribute (for simple inline content)
   const tipSpans = element.querySelectorAll('span[data-tip]');
   
   if (tipSpans.length === 0) {
@@ -245,15 +210,12 @@ function processSpanTips(element, helper) {
       return;
     }
 
-    // Get tooltip content from innerHTML (between the span tags)
-    let tipContent = span.innerHTML.trim();
+    // Get tooltip content from innerHTML
+    const tipContent = span.innerHTML.trim();
     
     if (!tipContent) {
       return;
     }
-    
-    // Clean up the content
-    tipContent = tipContent.replace(/^["'\s]+|["'\s]+$/g, '');
 
     // Create tooltip component
     const tipComponent = document.createElement('span');
