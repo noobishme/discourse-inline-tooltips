@@ -89,25 +89,49 @@ function insertTip(toolbarEvent, api) {
     return;
   }
 
-  const reply = model.reply || "";
-  const selection = model.replySelection;
+  // Get selected text - handle both string and object formats
   let selectedText = "";
-
-  if (selection?.start !== undefined && selection?.end !== undefined) {
-    selectedText = reply.substring(selection.start, selection.end);
+  
+  if (toolbarEvent.selected) {
+    // If it's a string, use it directly
+    if (typeof toolbarEvent.selected === "string") {
+      selectedText = toolbarEvent.selected;
+    } 
+    // If it's an object, try to get the value property
+    else if (typeof toolbarEvent.selected === "object") {
+      selectedText = toolbarEvent.selected.value || toolbarEvent.selected.text || "";
+    }
+  }
+  
+  // Determine what goes where:
+  // - If text is selected: selected text becomes the TRIGGER (visible), tooltip content goes in data-tip
+  // - If no selection: use placeholder for trigger
+  
+  let insertion;
+  
+  if (selectedText) {
+    // Text is selected - wrap it and it becomes the trigger
+    insertion = `<span data-tip="Tooltip content with **markdown** and &lt;strong&gt;HTML&lt;/strong&gt;">${selectedText}</span>`;
+  } else {
+    // No selection - insert full template with placeholder trigger inside span
+    insertion = `<span data-tip="Tooltip content with **markdown** and &lt;strong&gt;HTML&lt;/strong&gt;">trigger text</span>`;
   }
 
-  const triggerText = selectedText || "trigger text";
-  
-  // Use a span with special class that users write in markdown
-  const insertion = `<span data-tip="${triggerText}">
-
-Tooltip content with **markdown** and <strong>HTML</strong>
-
-</span>`;
-
-  if (typeof model.appendText === "function") {
-    model.appendText(insertion);
+  // Use addText which properly handles cursor position from toolbarEvent
+  if (typeof toolbarEvent.addText === "function") {
+    toolbarEvent.addText(insertion);
+  } else {
+    // Fallback: use model methods
+    const reply = model.reply || "";
+    const selection = model.replySelection || {};
+    const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
+    const selectionEnd = selection.end ?? model.replySelectionEnd ?? reply.length;
+    
+    if (typeof model.replaceText === "function") {
+      model.replaceText(selectionStart, selectionEnd, insertion);
+    } else if (typeof model.appendText === "function") {
+      model.appendText(insertion);
+    }
   }
 }
 
@@ -133,16 +157,17 @@ function processTips(element, helper) {
       return;
     }
     
-    const triggerText = span.getAttribute('data-tip');
+    // Get tooltip content from data-tip attribute
+    const tipContent = span.getAttribute('data-tip');
     
-    if (!triggerText) {
+    if (!tipContent) {
       return;
     }
 
-    // Get the content (innerHTML of the span)
-    const tipContent = span.innerHTML.trim();
+    // Get trigger text from the span's inner content
+    const triggerText = span.innerHTML.trim();
     
-    if (!tipContent) {
+    if (!triggerText) {
       return;
     }
 
