@@ -28,9 +28,7 @@ class InlineTip extends Component {
         >{{htmlSafe @data.triggerText}}</a>
       </:trigger>
       <:content>
-        <div class="inline-tip-content">
-          {{htmlSafe @data.tipContent}}
-        </div>
+        {{htmlSafe @data.tipContent}}
       </:content>
     </DTooltip>
   </template>
@@ -60,7 +58,7 @@ export default apiInitializer("0.11.1", (api) => {
   if (composerApi.addComposerToolbarPopupMenuOption) {
     composerApi.addComposerToolbarPopupMenuOption({
       id: "insert-tip",
-      icon: "tooltip-icon",
+      icon: "info-circle",
       label: "insert_tooltip_label",
       action(toolbarEvent) {
         insertTip(toolbarEvent, api);
@@ -91,43 +89,25 @@ function insertTip(toolbarEvent, api) {
     return;
   }
 
-  // Get selected text - handle both string and object formats
+  const reply = model.reply || "";
+  const selection = model.replySelection;
   let selectedText = "";
-  
-  if (toolbarEvent.selected) {
-    // If it's a string, use it directly
-    if (typeof toolbarEvent.selected === "string") {
-      selectedText = toolbarEvent.selected;
-    } 
-    // If it's an object, try to get the value property
-    else if (typeof toolbarEvent.selected === "object") {
-      selectedText = toolbarEvent.selected.value || toolbarEvent.selected.text || "";
-    }
-  }
-  
-  // Use selected text as trigger, or default placeholder
-  let triggerText = selectedText || "trigger text";
-  
-  // Create the tooltip markup
-  // NO BLANK LINES inside the span - Markdown will break it otherwise
-  const htmlTag = "strong";
-  const insertion = `<span data-tip="${triggerText}">Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}></span>`;
 
-  // Use addText which properly handles cursor position from toolbarEvent
-  if (typeof toolbarEvent.addText === "function") {
-    toolbarEvent.addText(insertion);
-  } else {
-    // Fallback: use model methods
-    const reply = model.reply || "";
-    const selection = model.replySelection || {};
-    const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
-    const selectionEnd = selection.end ?? model.replySelectionEnd ?? reply.length;
-    
-    if (typeof model.replaceText === "function") {
-      model.replaceText(selectionStart, selectionEnd, insertion);
-    } else if (typeof model.appendText === "function") {
-      model.appendText(insertion);
-    }
+  if (selection?.start !== undefined && selection?.end !== undefined) {
+    selectedText = reply.substring(selection.start, selection.end);
+  }
+
+  const triggerText = selectedText || "trigger text";
+  
+  // Use a span with special class that users write in markdown
+  const insertion = `<span data-tip="${triggerText}">
+
+Tooltip content with **markdown** and <strong>HTML</strong>
+
+</span>`;
+
+  if (typeof model.appendText === "function") {
+    model.appendText(insertion);
   }
 }
 
@@ -153,22 +133,18 @@ function processTips(element, helper) {
       return;
     }
     
-    // Get trigger text from data-tip attribute
     const triggerText = span.getAttribute('data-tip');
     
     if (!triggerText) {
       return;
     }
 
-    // Get tooltip content from innerHTML (between the span tags)
-    let tipContent = span.innerHTML.trim();
+    // Get the content (innerHTML of the span)
+    const tipContent = span.innerHTML.trim();
     
     if (!tipContent) {
       return;
     }
-    
-    // Clean up the content - remove wrapping quotes that Markdown might add
-    tipContent = tipContent.replace(/^["'\s]+|["'\s]+$/g, '');
 
     // Create tooltip component
     const tipComponent = document.createElement('span');
