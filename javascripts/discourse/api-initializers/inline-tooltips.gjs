@@ -28,7 +28,9 @@ class InlineTip extends Component {
         >{{htmlSafe @data.triggerText}}</a>
       </:trigger>
       <:content>
-        {{htmlSafe @data.tipContent}}
+        <div class="inline-tip-content">
+          {{htmlSafe @data.tipContent}}
+        </div>
       </:content>
     </DTooltip>
   </template>
@@ -159,11 +161,14 @@ function processTips(element, helper) {
     }
 
     // Get tooltip content from innerHTML (between the span tags)
-    const tipContent = span.innerHTML.trim();
+    let tipContent = span.innerHTML.trim();
     
     if (!tipContent) {
       return;
     }
+    
+    // Clean up the content - remove wrapping quotes that Markdown might add
+    tipContent = tipContent.replace(/^["'\s]+|["'\s]+$/g, '');
 
     // Create tooltip component
     const tipComponent = document.createElement('span');
