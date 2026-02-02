@@ -103,14 +103,19 @@ function insertTip(toolbarEvent, api) {
     }
   }
   
-  let triggerText = selectedText || "trigger text";
+  // Determine what goes where:
+  // - If text is selected: selected text becomes the TRIGGER (visible), tooltip content goes in data-tip
+  // - If no selection: use placeholder for trigger
   
-  // Create the tooltip markup
-  const insertion = `<span data-tip="${triggerText}">
-
-Tooltip content with **markdown** and <strong>HTML</strong>
-
-</span>`;
+  let insertion;
+  
+  if (selectedText) {
+    // Text is selected - wrap it and it becomes the trigger
+    insertion = `<span data-tip="Tooltip content with **markdown** and &lt;strong&gt;HTML&lt;/strong&gt;">${selectedText}</span>`;
+  } else {
+    // No selection - insert full template with placeholder trigger inside span
+    insertion = `<span data-tip="Tooltip content with **markdown** and &lt;strong&gt;HTML&lt;/strong&gt;">trigger text</span>`;
+  }
 
   // Use addText which properly handles cursor position from toolbarEvent
   if (typeof toolbarEvent.addText === "function") {
@@ -152,16 +157,17 @@ function processTips(element, helper) {
       return;
     }
     
-    const triggerText = span.getAttribute('data-tip');
+    // Get tooltip content from data-tip attribute
+    const tipContent = span.getAttribute('data-tip');
     
-    if (!triggerText) {
+    if (!tipContent) {
       return;
     }
 
-    // Get the content (innerHTML of the span)
-    const tipContent = span.innerHTML.trim();
+    // Get trigger text from the span's inner content
+    const triggerText = span.innerHTML.trim();
     
-    if (!tipContent) {
+    if (!triggerText) {
       return;
     }
 
