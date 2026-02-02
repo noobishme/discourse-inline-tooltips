@@ -58,7 +58,7 @@ export default apiInitializer("0.11.1", (api) => {
   if (composerApi.addComposerToolbarPopupMenuOption) {
     composerApi.addComposerToolbarPopupMenuOption({
       id: "insert-tip",
-      icon: "info-circle",
+      icon: "tooltip-icon",
       label: "insert_tooltip_label",
       action(toolbarEvent) {
         insertTip(toolbarEvent, api);
