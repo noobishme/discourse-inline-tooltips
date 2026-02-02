@@ -90,23 +90,31 @@ function insertTip(toolbarEvent, api) {
   }
 
   const reply = model.reply || "";
-  const selection = model.replySelection;
-  let selectedText = "";
-
-  if (selection?.start !== undefined && selection?.end !== undefined) {
-    selectedText = reply.substring(selection.start, selection.end);
-  }
-
-  const triggerText = selectedText || "trigger text";
+  const selection = model.replySelection || {};
+  const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
+  const selectionEnd = selection.end ?? model.replySelectionEnd ?? reply.length;
   
-  // Use a span with special class that users write in markdown
+  let selectedText = "";
+  let triggerText = "trigger text";
+  
+  // Check if text is selected
+  if (selectionStart !== undefined && selectionEnd !== undefined && selectionStart !== selectionEnd) {
+    selectedText = reply.substring(selectionStart, selectionEnd);
+    triggerText = selectedText;
+  }
+  
+  // Create the tooltip markup
   const insertion = `<span data-tip="${triggerText}">
 
 Tooltip content with **markdown** and <strong>HTML</strong>
 
 </span>`;
 
-  if (typeof model.appendText === "function") {
+  // Use replaceText to insert at cursor or replace selection
+  if (typeof model.replaceText === "function") {
+    model.replaceText(selectionStart, selectionEnd, insertion);
+  } else if (typeof model.appendText === "function") {
+    // Fallback to appendText if replaceText not available
     model.appendText(insertion);
   }
 }
