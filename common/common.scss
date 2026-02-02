@@ -22,6 +22,8 @@
   
   .fk-d-tooltip__inner-content {
     flex-direction: column;
+    overflow: auto;
+    max-height: 600px;
   }
 
   img {
