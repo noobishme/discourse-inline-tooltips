@@ -19,9 +19,12 @@
 .fk-d-tooltip__content[data-identifier="inline-tip"] {
   overflow-wrap: break-word;
   font-size: var(--font-down-1);
+  padding: 1em;
   
   .fk-d-tooltip__inner-content {
     flex-direction: column;
+    padding: 0;
+    overflow: auto;
   }
 
   img {
