@@ -70,3 +70,69 @@ body.dark-mode {
     }
   }
 }
+
+
+.fk-d-tooltip__inner-content {
+  // Remove extra whitespace from markdown processing
+  white-space: normal;
+  
+  // Ensure inline elements stay inline
+  strong, em, code, a {
+    display: inline;
+  }
+  
+  // Remove margins from paragraphs inside tooltips
+  p {
+    margin: 0;
+    display: inline;
+  }
+  
+  // Handle block elements properly
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0.5em 0;
+    display: block;
+  }
+  
+  // Tables should display as block
+  table {
+    display: table;
+    margin: 0.5em 0;
+  }
+  
+  // Lists should display as block
+  ul, ol {
+    display: block;
+    margin: 0.5em 0;
+  }
+  
+  // Images should display as block
+  img {
+    display: block;
+    max-width: 100%;
+    margin: 0.5em 0;
+  }
+  
+  // Line breaks should work
+  br {
+    display: block;
+    content: "";
+    margin: 0;
+  }
+}
+
+// Style for the trigger link
+.inline-tip {
+  display: inline;
+  
+  .expand-tip {
+    color: var(--tertiary);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    cursor: pointer;
+    
+    &:hover {
+      color: var(--tertiary-hover);
+      text-decoration-style: solid;
+    }
+  }
+}
