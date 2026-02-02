@@ -98,4 +98,90 @@ function insertTip(toolbarEvent, api) {
       selectedText = toolbarEvent.selected;
     } 
     // If it's an object, try to get the value property
-    else if (typeof toolbarEvent.selected === "ob
+    else if (typeof toolbarEvent.selected === "object") {
+      selectedText = toolbarEvent.selected.value || toolbarEvent.selected.text || "";
+    }
+  }
+  
+  // Use selected text as trigger, or default placeholder
+  let triggerText = selectedText || "trigger text";
+  
+  // Create the tooltip markup
+  // data-tip contains the trigger text (visible clickable text)
+  // Content between tags is the tooltip content (what appears in the popup)
+  const htmlTag = "strong";
+  const insertion = `<span data-tip="${triggerText}">
+
+Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}>
+
+</span>`;
+
+  // Use addText which properly handles cursor position from toolbarEvent
+  if (typeof toolbarEvent.addText === "function") {
+    toolbarEvent.addText(insertion);
+  } else {
+    // Fallback: use model methods
+    const reply = model.reply || "";
+    const selection = model.replySelection || {};
+    const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
+    const selectionEnd = selection.end ?? model.replySelectionEnd ?? reply.length;
+    
+    if (typeof model.replaceText === "function") {
+      model.replaceText(selectionStart, selectionEnd, insertion);
+    } else if (typeof model.appendText === "function") {
+      model.appendText(insertion);
+    }
+  }
+}
+
+function processTips(element, helper) {
+  if (!element || element.classList.contains("inline-tips-processed")) {
+    return;
+  }
+
+  if (!helper?.getModel()) {
+    return;
+  }
+
+  // Find all spans with data-tip attribute
+  const tipSpans = element.querySelectorAll('span[data-tip]');
+  
+  if (tipSpans.length === 0) {
+    return;
+  }
+
+  tipSpans.forEach((span) => {
+    // Skip if already processed
+    if (span.classList.contains('inline-tip')) {
+      return;
+    }
+    
+    // Get trigger text from data-tip attribute
+    const triggerText = span.getAttribute('data-tip');
+    
+    if (!triggerText) {
+      return;
+    }
+
+    // Get tooltip content from innerHTML (between the span tags)
+    const tipContent = span.innerHTML.trim();
+    
+    if (!tipContent) {
+      return;
+    }
+
+    // Create tooltip component
+    const tipComponent = document.createElement('span');
+    tipComponent.className = 'inline-tip';
+    
+    helper.renderGlimmer(tipComponent, InlineTip, {
+      triggerText: triggerText,
+      tipContent: tipContent
+    });
+
+    // Replace the span with our tooltip
+    span.parentNode.replaceChild(tipComponent, span);
+  });
+  
+  element.classList.add("inline-tips-processed");
+}
