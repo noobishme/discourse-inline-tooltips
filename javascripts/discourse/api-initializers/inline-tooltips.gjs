@@ -95,32 +95,23 @@ function insertTip(toolbarEvent, api) {
   let selectedText = "";
   
   if (toolbarEvent.selected) {
-    // If it's a string, use it directly
     if (typeof toolbarEvent.selected === "string") {
       selectedText = toolbarEvent.selected;
     } 
-    // If it's an object, try to get the value property
     else if (typeof toolbarEvent.selected === "object") {
       selectedText = toolbarEvent.selected.value || toolbarEvent.selected.text || "";
     }
   }
   
-  // Use selected text as trigger, or default placeholder
   let triggerText = selectedText || "trigger text";
   
-  // Create the tooltip markup using div wrapper for rich content
+  // Simple inline content only
   const htmlTag = "strong";
-  const insertion = `<div class="inline-tip-raw" data-trigger="${triggerText}">
+  const insertion = `<span data-tip="${triggerText}">Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}></span>`;
 
-Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}>
-
-</div>`;
-
-  // Use addText which properly handles cursor position from toolbarEvent
   if (typeof toolbarEvent.addText === "function") {
     toolbarEvent.addText(insertion);
   } else {
-    // Fallback: use model methods
     const reply = model.reply || "";
     const selection = model.replySelection || {};
     const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
@@ -143,54 +134,6 @@ function processTips(element, helper) {
     return;
   }
 
-  // Process div-based tips (for rich content)
-  processDivTips(element, helper);
-  
-  // Also process span-based tips (for simple inline content)
-  processSpanTips(element, helper);
-  
-  element.classList.add("inline-tips-processed");
-}
-
-function processDivTips(element, helper) {
-  // Find all divs with class inline-tip-raw
-  const tipDivs = element.querySelectorAll('div.inline-tip-raw');
-  
-  if (tipDivs.length === 0) {
-    return;
-  }
-
-  tipDivs.forEach((div) => {
-    // Get trigger text from data-trigger attribute
-    const triggerText = div.getAttribute('data-trigger');
-    
-    if (!triggerText) {
-      return;
-    }
-
-    // Get tooltip content from innerHTML
-    const tipContent = div.innerHTML.trim();
-    
-    if (!tipContent) {
-      return;
-    }
-
-    // Create tooltip component as inline element
-    const tipComponent = document.createElement('span');
-    tipComponent.className = 'inline-tip';
-    
-    helper.renderGlimmer(tipComponent, InlineTip, {
-      triggerText: triggerText,
-      tipContent: tipContent
-    });
-
-    // Replace the div with our inline tooltip
-    div.parentNode.replaceChild(tipComponent, div);
-  });
-}
-
-function processSpanTips(element, helper) {
-  // Find all spans with data-tip attribute (for simple inline content)
   const tipSpans = element.querySelectorAll('span[data-tip]');
   
   if (tipSpans.length === 0) {
@@ -198,26 +141,22 @@ function processSpanTips(element, helper) {
   }
 
   tipSpans.forEach((span) => {
-    // Skip if already processed
     if (span.classList.contains('inline-tip')) {
       return;
     }
     
-    // Get trigger text from data-tip attribute
     const triggerText = span.getAttribute('data-tip');
     
     if (!triggerText) {
       return;
     }
 
-    // Get tooltip content from innerHTML
     const tipContent = span.innerHTML.trim();
     
     if (!tipContent) {
       return;
     }
 
-    // Create tooltip component
     const tipComponent = document.createElement('span');
     tipComponent.className = 'inline-tip';
     
@@ -226,7 +165,8 @@ function processSpanTips(element, helper) {
       tipContent: tipContent
     });
 
-    // Replace the span with our tooltip
     span.parentNode.replaceChild(tipComponent, span);
   });
+  
+  element.classList.add("inline-tips-processed");
 }
