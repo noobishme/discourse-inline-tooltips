@@ -95,29 +95,23 @@ function insertTip(toolbarEvent, api) {
   let selectedText = "";
   
   if (toolbarEvent.selected) {
-    // If it's a string, use it directly
     if (typeof toolbarEvent.selected === "string") {
       selectedText = toolbarEvent.selected;
     } 
-    // If it's an object, try to get the value property
     else if (typeof toolbarEvent.selected === "object") {
       selectedText = toolbarEvent.selected.value || toolbarEvent.selected.text || "";
     }
   }
   
-  // Use selected text as trigger, or default placeholder
   let triggerText = selectedText || "trigger text";
   
-  // Create the tooltip markup
-  // NO BLANK LINES inside the span - Markdown will break it otherwise
+  // Simple inline content only
   const htmlTag = "strong";
   const insertion = `<span data-tip="${triggerText}">Tooltip content with **markdown** and <${htmlTag}>HTML</${htmlTag}></span>`;
 
-  // Use addText which properly handles cursor position from toolbarEvent
   if (typeof toolbarEvent.addText === "function") {
     toolbarEvent.addText(insertion);
   } else {
-    // Fallback: use model methods
     const reply = model.reply || "";
     const selection = model.replySelection || {};
     const selectionStart = selection.start ?? model.replySelectionStart ?? reply.length;
@@ -140,7 +134,6 @@ function processTips(element, helper) {
     return;
   }
 
-  // Find all spans with data-tip attribute
   const tipSpans = element.querySelectorAll('span[data-tip]');
   
   if (tipSpans.length === 0) {
@@ -148,29 +141,22 @@ function processTips(element, helper) {
   }
 
   tipSpans.forEach((span) => {
-    // Skip if already processed
     if (span.classList.contains('inline-tip')) {
       return;
     }
     
-    // Get trigger text from data-tip attribute
     const triggerText = span.getAttribute('data-tip');
     
     if (!triggerText) {
       return;
     }
 
-    // Get tooltip content from innerHTML (between the span tags)
-    let tipContent = span.innerHTML.trim();
+    const tipContent = span.innerHTML.trim();
     
     if (!tipContent) {
       return;
     }
-    
-    // Clean up the content - remove wrapping quotes that Markdown might add
-    tipContent = tipContent.replace(/^["'\s]+|["'\s]+$/g, '');
 
-    // Create tooltip component
     const tipComponent = document.createElement('span');
     tipComponent.className = 'inline-tip';
     
@@ -179,7 +165,6 @@ function processTips(element, helper) {
       tipContent: tipContent
     });
 
-    // Replace the span with our tooltip
     span.parentNode.replaceChild(tipComponent, span);
   });
   
