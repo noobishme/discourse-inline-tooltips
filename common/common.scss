@@ -6,6 +6,8 @@
   a.expand-tip {
     text-decoration: underline;
     text-decoration-style: dotted;
+    -webkit-text-decoration: underline;
+    -webkit-text-decoration-style: dotted;
     color: var(--tertiary);
     cursor: help;
     
@@ -15,6 +17,9 @@
     }
   }
 }
+
+
+
 
 .fk-d-tooltip__content[data-identifier="inline-tip"] {
   overflow-wrap: break-word;
