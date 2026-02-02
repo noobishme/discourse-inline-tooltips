@@ -89,12 +89,21 @@ function insertTip(toolbarEvent, api) {
     return;
   }
 
-  // Get text from the toolbarEvent which contains the cursor position
-  const selected = toolbarEvent.selected || "";
-  const pre = toolbarEvent.pre || "";
-  const post = toolbarEvent.post || "";
+  // Get selected text - handle both string and object formats
+  let selectedText = "";
   
-  let triggerText = selected || "trigger text";
+  if (toolbarEvent.selected) {
+    // If it's a string, use it directly
+    if (typeof toolbarEvent.selected === "string") {
+      selectedText = toolbarEvent.selected;
+    } 
+    // If it's an object, try to get the value property
+    else if (typeof toolbarEvent.selected === "object") {
+      selectedText = toolbarEvent.selected.value || toolbarEvent.selected.text || "";
+    }
+  }
+  
+  let triggerText = selectedText || "trigger text";
   
   // Create the tooltip markup
   const insertion = `<span data-tip="${triggerText}">
