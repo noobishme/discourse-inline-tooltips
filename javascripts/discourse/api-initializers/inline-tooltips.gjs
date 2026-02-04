@@ -100,11 +100,7 @@ function insertTip(toolbarEvent, api) {
   const triggerText = selectedText || "trigger text";
   
   // Use a span with special class that users write in markdown
-  const insertion = `<span data-tip="${triggerText}">
-
-Tooltip content with **markdown** and <strong>HTML</strong>
-
-</span>`;
+  const insertion = `<span data-tip="${triggerText}">Tooltip content with **markdown** and <strong>HTML</strong></span>`;
 
   if (typeof model.appendText === "function") {
     model.appendText(insertion);
